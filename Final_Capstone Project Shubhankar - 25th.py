@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
-# ===========================================================
 # CELL 0 — Imports & Setup
 # ===========================================================
 import os
@@ -57,10 +50,6 @@ plt.style.use("seaborn")
 sns.set_context("talk")
 print("✅ Imports complete, seed set.")
 
-
-# In[3]:
-
-
 # ===========================================================
 # CELL 1 — Download NLTK stopwords (run once)
 # ===========================================================
@@ -86,10 +75,6 @@ df = df.sample(frac=1, random_state=SEED).reset_index(drop=True)
 
 print("Dataset loaded. Shape:", df.shape)
 print(df['label'].value_counts())
-
-
-# In[4]:
-
 
 # ===========================================================
 # CELL 3 — Improved Text Cleaning & Normalization
@@ -147,10 +132,6 @@ plt.show()
 
 print(df['text_length'].describe().to_string())
 
-
-# In[5]:
-
-
 # ===========================================================
 # CELL 5 — Train / Validation / Test split (for deep model)
 # ===========================================================
@@ -182,10 +163,6 @@ X_test_tfidf = tfidf.transform(X_test)
 
 print("TF-IDF shapes:", X_train_tfidf.shape, X_val_tfidf.shape, X_test_tfidf.shape)
 
-
-# In[ ]:
-
-
 # ===========================================================
 # CELL 7 — Baseline Models: Train & Evaluate (LR, NB, RF)
 # ===========================================================
@@ -193,9 +170,7 @@ def eval_model(name, model, X_tr, y_tr, X_te, y_te, return_probs=True):
     model.fit(X_tr, y_tr)
     preds = model.predict(X_te)
     probs = model.predict_proba(X_te)[:,1] if return_probs else None
-    stats = {
-        'Model': name,
-        'Accuracy': accuracy_score(y_te, preds),
+    stats = {'Model': name,'Accuracy': accuracy_score(y_te, preds),
         'Precision': precision_score(y_te, preds),
         'Recall': recall_score(y_te, preds),
         'F1 Score': f1_score(y_te, preds),
@@ -228,18 +203,10 @@ results_list.append(stats)
 baseline_df = pd.DataFrame(results_list).sort_values(by='F1 Score', ascending=False).reset_index(drop=True)
 print("\nBaseline summary:\n", baseline_df)
 
-
-# In[ ]:
-
-
 # ===========================================================
 # CELL 8 — GridSearchCV on Logistic Regression (5-fold CV)
 # ===========================================================
-param_grid = {
-    'C': [0.01, 0.1, 1.0, 10.0],
-    'penalty': ['l2'],
-    'solver': ['lbfgs']
-}
+param_grid = {'C': [0.01, 0.1, 1.0, 10.0],'penalty': ['l2'],'solver': ['lbfgs']}
 
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 grid = GridSearchCV(
@@ -268,10 +235,6 @@ tuned_lr_stats = {
 }
 baseline_df = pd.concat([baseline_df, pd.DataFrame([tuned_lr_stats])], ignore_index=True).sort_values(by='F1 Score', ascending=False).reset_index(drop=True)
 print("\nUpdated baseline summary:\n", baseline_df)
-
-
-# In[ ]:
-
 
 # ===========================================================
 # CELL 10 — Prepare Tokenizer & Sequences for BiLSTM (ensure OOV token set)
@@ -311,10 +274,6 @@ bilstm_model = Sequential([
 
 bilstm_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 bilstm_model.summary()
-
-
-# In[ ]:
-
 
 # ===========================================================
 # CELL 12 — Train BiLSTM (with callbacks)
@@ -360,10 +319,6 @@ plt.legend()
 
 plt.show()
 
-
-# In[ ]:
-
-
 # ===========================================================
 # CELL 13 — Evaluate BiLSTM on Test Set
 # ===========================================================
@@ -388,10 +343,6 @@ plt.ylabel('True Positive Rate')
 plt.title('BiLSTM ROC')
 plt.legend()
 plt.show()
-
-
-# In[ ]:
-
 
 # ===========================================================
 # CELL 14 — MODEL COMPARISON (assemble all models' metrics)
@@ -458,10 +409,6 @@ plt.title('Model Comparison by F1 Score')
 plt.xlim(0,1)
 plt.show()
 
-
-# In[ ]:
-
-
 # ===========================================================
 # CELL 15 — Save models & tokenizer
 # ===========================================================
@@ -479,10 +426,3 @@ with open('tokenizer.pkl', 'wb') as f:
 bilstm_model.save('bilstm_model.h5')
 
 print("✅ Saved tfidf_vectorizer.pkl, logreg_tuned.pkl, tokenizer.pkl, bilstm_model.h5")
-
-
-# In[ ]:
-
-
-
-
