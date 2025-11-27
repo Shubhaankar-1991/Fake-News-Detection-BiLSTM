@@ -27,12 +27,6 @@ from sklearn.metrics import (
 import nltk
 from nltk.corpus import stopwords
 from bs4 import BeautifulSoup
-
-# SHAP
-#import shap
-
-# TensorFlow / Keras for BiLSTM
-
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -60,7 +54,7 @@ print("✅ NLTK stopwords ready.")
 # ===========================================================
 # CELL 2 — Load & Label Data
 # ===========================================================
-# Adjust path if needed
+
 fake_path = "Fake.csv"
 true_path = "True.csv"
 
@@ -83,8 +77,7 @@ def clean_html(text):
     return BeautifulSoup(text, "html.parser").get_text() if pd.notna(text) else ""
 
 def normalize_text(text, stopwords_set=STOP_WORDS):
-    if pd.isna(text):
-        return ""
+    if pd.isna(text): return ""
     text = clean_html(text)
     text = text.lower()
     # URLs -> placeholder
@@ -135,21 +128,15 @@ print(df['text_length'].describe().to_string())
 # ===========================================================
 # CELL 5 — Train / Validation / Test split (for deep model)
 # ===========================================================
-# We'll create two separate pipelines:
-#  - TF-IDF classical models: vectorize on train split from below
-#  - Tokenizer + sequences for BiLSTM: fit tokenizer on train texts
 
 X = df['content']
 y = df['label'].values
 
-# primary split: train_temp (70%) and test (30%) then split train_temp -> train/val
 X_train_full, X_test, y_train_full, y_test = train_test_split(
-    X, y, test_size=0.20, stratify=y, random_state=SEED
-)
+    X, y, test_size=0.20, stratify=y, random_state=SEED)
 
 X_train, X_val, y_train, y_val = train_test_split(
-    X_train_full, y_train_full, test_size=0.15, stratify=y_train_full, random_state=SEED
-)
+    X_train_full, y_train_full, test_size=0.15, stratify=y_train_full, random_state=SEED)
 
 print("Splits sizes -> Train:", len(X_train), "Val:", len(X_val), "Test:", len(X_test))
 
@@ -291,9 +278,7 @@ rlr = ReduceLROnPlateau(monitor='val_loss',factor=0.2, patience=1,verbose=1)
 checkpoint_path = "./models/best_bilstm_tf"
 os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
 
-# Use TensorFlow SavedModel format instead of HDF5 to avoid I/O errors
-mcp = ModelCheckpoint(filepath=checkpoint_path, monitor='val_accuracy',save_best_only=True,mode='max',verbose=1,save_format='tf'   # ✅ ensures stable save (directory format)
-)
+mcp = ModelCheckpoint(filepath=checkpoint_path, monitor='val_accuracy',save_best_only=True,mode='max',verbose=1,save_format='tf'
 
 # Train model
 history = bilstm_model.fit(X_train_seq, y_train_arr,epochs=8,batch_size=64,validation_data=(X_val_seq, y_val_arr),
